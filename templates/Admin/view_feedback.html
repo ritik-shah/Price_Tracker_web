@@ -1,0 +1,40 @@
+{% extends 'index.html' %}
+{% block body %}
+    <h4 class="card-title"><u>FEEDBACKS</u> </h4>
+<form action="/view_feedbacks_post" method="post">
+    <table class="pull-right">
+     <tr>
+    <td>FROM</td>
+    <td><input type="date" name="textfield" id="textfield" class="form-control"/>
+    </td>
+    <td>TO</td>
+    <td width="168"><input type="date" name="textfield2" id="textfield2" class="form-control"/></td>
+    <td width="42"><input name="" type="submit" value="GO" class="btn btn-inverse-primary btn-fw" /></td>
+    </tr>
+    </table>
+
+
+        <table class="table table-hover">
+                      <thead>
+                        <tr>
+                            <th>F.NO</th>
+                            <th>DATE</th>
+                            <th>USER NAME</th>
+                            <th>FEEDBACK</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                         {% for i in data %}
+                            <tr>
+                                <td>{{ loop.index }}&nbsp;</td>
+                                <td>{{ i['fdate'] }}</td>
+                                <td>{{ i['fname'] }} {{ i['lname'] }}&nbsp;</td>
+                                <td>{{ i['feedback'] }}</td>
+                            </tr>
+                         {% endfor %}
+
+                      </tbody>
+        </table>
+
+</form>
+{% endblock %}

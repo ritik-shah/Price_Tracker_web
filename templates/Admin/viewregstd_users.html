@@ -1,0 +1,54 @@
+{% extends 'index.html' %}
+{% block body %}
+
+     <h4 class="card-title"><U>REGISTERED USERS</U></h4>
+    <form action="/viewregstd_post" method="post">
+<table class="pull-right">
+    <tr>
+
+
+        <td>SEARCH</td>
+        <td><input type="text" name="textfield" id="textfield" class="form-control"/></td>
+        <td width="109"><input type="submit" name="button2" id="button2" value="GO" class="btn btn-inverse-primary btn-fw"/></td>
+    </tr>
+</table>
+
+                    <table class="table table-striped">
+                      <thead>
+                        <tr>
+                            <th width="13%" >#</th>
+                            <th width="13%" >NAME</th>
+                            <th width="13%">PHONE NUMBER</th>
+                            <th width="13%">E MAIL</th>
+                            <th width="13%" >COUNTRY</th>
+                            <th width="13%" >DATE OF JOIN</th>
+                            <th width="13%" >D.O.B</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+
+                        {% for i in data %}
+  <tr>
+    <td width="13%">{{ loop.index }}</td>
+    <td width="13%">{{ i['fname'] }} {{ i['lname'] }}&nbsp;</td>
+    <td width="13%">{{ i['phno']}}&nbsp;</td>
+    <td width="13%">{{ i['emailid']}}&nbsp;</td>
+    <td width="13%">{{ i['country'] }}&nbsp;</td>
+    <td width="13%">{{ i['doj'] }}&nbsp;</td>
+    <td width="13%">{{ i['dob'] }}&nbsp;</td>
+  </tr>
+      {% endfor %}
+
+
+                      </tbody>
+                    </table>
+
+
+
+
+
+
+
+
+</form>
+{% endblock %}

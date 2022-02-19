@@ -1,0 +1,32 @@
+{% extends 'index.html' %}
+{% block body %}
+<body>
+<form action="" method="get">
+<table class="table table-bordered">
+  <tr>
+    <td >URL</td>
+    <td ><input type="text" name="textfield" id="textfield" class="form-control" /></td>
+  </tr>
+  <tr>
+    <td>SOURCE</td>
+    <td><select name="select" id="select" class="form-control">
+    </select></td>
+  </tr>
+  <tr>
+<!--    <td>&nbsp;</td>-->
+    <td colspan="2"><input type="submit" name="button" id="button" value="SEARCH" class="btn btn-inverse-primary btn-fw"/></td>
+  </tr>
+</table>
+
+<!--<table class="table-striped">-->
+<!--  <tr>-->
+<!--    <td>//photo</td>-->
+<!--    <td>Name</td>-->
+<!--  </tr>-->
+<!--  <tr>-->
+<!--    <td>Price</td>-->
+<!--    <td>&nbsp;</td>-->
+<!--  </tr>-->
+<!--</table>-->
+</form>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+{% block body %}
+<form action="/send_replies_post" method="post">
+<table width="331" height="101" border="1">
+  <tr>
+    <td width="131" height="30">COMPLAINT</td>
+    <td width="184">&nbsp;{{ res['u_complaint'] }}</td>
+  </tr>
+  <tr>
+    <td height="30">REPLY</td>
+    <td><textarea name="comp_reply" cols="30" rows="6"></textarea></td>
+  </tr>
+  <tr>
+    <td height="31">&nbsp;</td>
+    <td><input type="submit" name="button" id="button" value="Submit" /></td>
+  </tr>
+</table>
+</form>
+{% endblock %}

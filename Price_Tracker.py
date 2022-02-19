@@ -204,6 +204,7 @@ def and_pr_scrap():
     elif "amazon" in URL:
 
         itemname,pricedata,imgdata=and_amazon(URL)
+        print(imgdata)
         return jsonify(status="ok", prname=itemname, prprice=pricedata, primg=imgdata)
     else:
         return jsonify("Enter correct URL")
@@ -219,10 +220,10 @@ def and_flipkart(URL):
     namedata=soup.find('span',class_="B_NuCI")
     # prname=bnamedata.text+namedata.text
     pricedata=soup.find('div',class_="_30jeq3 _16Jk6d")
-    imgdata=soup.find('div',class_="_3kidJX")
-    imgdata1=soup.find_all_next('div')
+    # imgdata=soup.find('div',class_="_3kidJX")
+    # imgdata1=soup.find_all_next('div')
     # name = namedata[0].find('span', attrs={'class': 'B_NuCI'})
-    n =soup.find_all('img', alt=True)
+    # n =soup.find_all('img', alt=True)
     if (bnamedata is not None):
         itemname=bnamedata+namedata
     else:
@@ -230,9 +231,31 @@ def and_flipkart(URL):
     itemname=itemname.text
     pricedata=pricedata.text
 
+    img=""
+
+    imgdata=soup.find('div',class_="_1YokD2 _3Mn1Gg col-5-12 _78xt5Y")
+    # print(len(imgdata))
+
+    for i in imgdata:
+        # print("hi")
+        s=i.find("img")
+        if s is not None:
+            print(s.attrs['src'])
+            img=s.attrs['src']
 
 
-    return itemname,pricedata,""
+        # print("iiii",s)
+
+
+
+
+
+
+
+
+
+
+    return itemname,pricedata,img
 
 
 # @app.route("/aaaaa")
@@ -258,11 +281,26 @@ def and_amazon(URL):
     webpage = requests.get(URL, headers=HEADERS)
     soup = BeautifulSoup(webpage.content, 'html.parser')
 
+
+    print("hurrraaaai")
+
+
+
     pname= soup.find('span', id="productTitle")
     pname=pname.text
     print(pname)
     pricedata = soup.find('span', id="priceblock_ourprice")
-    if(pricedata is not None):
+
+    pa = soup.find("input", id="twister-plus-price-data-price")
+
+
+
+    if pa is not  None:
+        print(pa.attrs["value"])
+
+        p = pa.attrs["value"]
+
+    elif(pricedata is not None):
         print(2,pricedata.text)
         p=pricedata.text
     else:
@@ -279,7 +317,7 @@ def and_amazon(URL):
 
                 f=f+1
                 if a is not None:
-                    print(a.text,"hi")
+                    print(7,a.text,"hi")
                     p = a.text
                     break
                 else:
@@ -294,6 +332,11 @@ def and_amazon(URL):
                 if(pricedata is not None):
                     print(5,pricedata.text)
                     p = pricedata.text
+
+
+
+
+
                 else:
                     pricedata=soup.find('span',class_="a-size-medium a-color-price priceBlockBuyingPriceString")
                     print(6,pricedata.text)
@@ -301,20 +344,40 @@ def and_amazon(URL):
 
 
 
-    imgdata = soup.find('img', class_="a-dynamic-image a-stretch-horizontal")
-    if(imgdata is not None):
-        print(imgdata.attrs['data-old-hires'])
-    else:
-        imgdata=soup.find('img',id="landingImage")
-        if(imgdata is not None):
-            print(imgdata.attrs['data-a-dynamic-image'])
+
+    a=""
+
+    s=""
+    ks= soup.find("div", id="imgTagWrapperId")
+    print(len(ks))
+    if ks is not None:
+        s= ks.find("img").attrs["src"]
+        print("sssss",s)
+
+
+    print("2222222222222222222")
+
+
+    #
+    # imgdata = soup.find('img', class_="a-dynamic-image a-stretch-horizontal")
+    # if(imgdata is not None):
+    #     print(imgdata.attrs['data-old-hires'])
+    #     a=imgdata.attrs['data-old-hires']
+    # else:
+    #     imgdata=soup.find('img',id="landingImage")
+    #     if(imgdata is not None):
+    #         print(imgdata.attrs['data-a-dynamic-image'])
+    #         a=imgdata.attrs['data-a-dynamic-image']
+    #
+
+
 
     print(pname,"h")
     # print(pricedata.text)
     # p=p.text
     # pricedata=pricedata.text
 
-    return pname,p,"imgdata"
+    return pname,p,s
 
 @app.route('/priceinsert/<pbid>')
 def priceinsert(pbid):
@@ -370,13 +433,21 @@ def priceinsert(pbid):
 @app.route('/insertintobudget',methods=['post'])
 def insertintobudget():
     prurl=request.json["prurl"]
+
+
+
+
+
+
+
     tarprice=request.json["tarprice"]
     prname=request.json["prname"]
     buid=request.json["buid"]
+    primg=request.json["primg"]
     c = Db()
-    qry="INSERT INTO budget (`pr_url`,`tar_price`,`pr_name`,`buid`,`set_date`) VALUES ('"+prurl+"','"+tarprice+"','"+prname+"','"+buid+"',curdate())"
+    qry="INSERT INTO budget (`pr_url`,`tar_price`,`pr_name`,`buid`,`set_date`,img_url) VALUES ('"+prurl+"','"+tarprice+"','"+prname+"','"+buid+"',curdate(),'"+primg+"')"
     res=c.insert(qry)
-    return "ok"
+    return jsonify(status="ok")
 
 
 
@@ -385,18 +456,18 @@ def insertintobudget():
 def viewmybudget():
     c=Db()
     buid=request.json["lid"]
-    qry="SELECT * FROM budget where buid='"+buid+"'"
+    qry="SELECT * FROM budget where buid='"+buid+"' ORDER BY set_date DESC"
     res=c.select(qry)
+    print(res)
+    return jsonify(status="ok",data=res)
 
-    return jsonify(data=res)
 
 
-
-@app.route('/deletemybudget',methods=['post'])
-def deletemybudget():
+@app.route('/and_deletemybudget',methods=['post'])
+def and_deletemybudget():
     c=Db()
-    bid=request.form["bid"]
-    qry="DELETE * FROM budget where bid='"+bid+"'"
+    bid=request.json["bid"]
+    qry="DELETE FROM budget where bid='"+bid+"'"
     c.delete(qry)
     return jsonify(status="ok")
 
@@ -444,27 +515,36 @@ def editprofile():
     fname = request.json["fname"]
     lname = request.json["lname"]
     phno = request.json["phno"]
-    emailid = request.json["emailid"]
+
     dob = request.json["dob"]
     country = request.json["country"]
     prpic =request.json['img']
     uid=request.json["lid"]
+    flag=request.json["flag"]
 
-    import base64
-    a = base64.b64decode(prpic)
-    print(len(a))
-    from datetime import datetime
-    filename = str(datetime.now().year) + str(datetime.now().month) + str(datetime.now().day) + str(
-        datetime.now().hour) + str(datetime.now().minute) + str(datetime.now().second) + str(
-        datetime.now().microsecond) + ".jpg"
-    with open("D:\\Price_Tracker\\static\\userimage\\" + filename, "wb") as fh:
-        fh.write(a)
-    cimg = "/static/userimage/" + filename
+    if flag=="1":
 
-    qry="UPDATE users set fname='"+fname+"',lname='"+lname+"',phno='"+phno+"',emailid='"+emailid+"',dob='"+dob+"',country='"+country+"',pr_pic='"+cimg+"' where ulid='"+uid+"'"
-    print(qry)
+        import base64
+        a = base64.b64decode(prpic)
+        print(len(a))
+        from datetime import datetime
+        filename = str(datetime.now().year) + str(datetime.now().month) + str(datetime.now().day) + str(
+            datetime.now().hour) + str(datetime.now().minute) + str(datetime.now().second) + str(
+            datetime.now().microsecond) + ".jpg"
+        with open("D:\\Price_Tracker\\static\\userimage\\" + filename, "wb") as fh:
+            fh.write(a)
+        cimg = "/static/userimage/" + filename
 
-    c.update(qry)
+        qry="UPDATE users set fname='"+fname+"',lname='"+lname+"',phno='"+phno+"',dob='"+dob+"',country='"+country+"',pr_pic='"+cimg+"' where ulid='"+uid+"'"
+        print(qry)
+
+        c.update(qry)
+    else:
+
+        qry = "UPDATE users set fname='" + fname + "',lname='" + lname + "',phno='" + phno + "',dob='" + dob + "',country='" + country + "' where ulid='" + uid + "'"
+        print(qry)
+        c.update(qry)
+
     return jsonify(status="ok")
 
 
@@ -587,7 +667,7 @@ def and_feedback():
 
     print(lid)
     print(feedback)
-    qry="INSERT into feedback (feedback,fuid) VALUES ('"+feedback+"','"+lid+"')"
+    qry="INSERT into feedback (feedback,fuid,fdate) VALUES ('"+feedback+"','"+lid+"',curdate())"
     c.insert(qry)
     return jsonify(status="ok")
 
@@ -595,7 +675,7 @@ def and_feedback():
 def and_viewfeedback():
     c=Db()
     lid=request.json['lid']
-    qry="SELECT feedback,DATE_FORMAT(`fdate`, '%m-%d-%Y') AS 'fdate' from feedback where fuid='"+lid+"'"
+    qry="SELECT feedback,DATE_FORMAT(`fdate`, '%m-%d-%Y') AS 'fdate' from feedback where fuid='"+lid+"' ORDER BY fdate DESC"
     feed=c.select(qry)
     return jsonify(status="ok",data=feed)
 
@@ -612,27 +692,120 @@ def ml():
         ldate.append(i['pr_date'])
         lprice.append(i['pr_amt'])
     print(lprice,"*******")
-    # com_lis=[]
-    # los_list=[]
+    com_lis=[]
+    los_list=[]
+    # open,high,low,close
     lol_list=[]
+    high_lst=[]
+    low_lst=[]
     for i in range(len(lprice)):
-        if len(lol_list)==0:
-            a=int(lprice[i])
-            b=int(lprice[i])
+        if i==0:
+            a=float(lprice[i])
+            b=float(lprice[i])
             # com_lis.append([a,b])
             # los_list.append(0)
-            lol_list.append([a,b,0])
+            # lol_list.append([a,a,a,a])
+            # high_lst.append(a)
+            # low_lst.append(a)
         else:
             a = int(lprice[i-1])
             b = int(lprice[i])
             loss=b-a
-            # los_list.append(loss)
-            # com_lis.append([a,b])
-            lol_list.append([a, b, loss])
+            if a>b:
+                high_lst.append(a)
+                low_lst.append(b)
+                lol_list.append([a, a,b,b])
+            else:
+                high_lst.append(b)
+                low_lst.append(a)
+                lol_list.append([a, b, a, b])
+            los_list.append(loss)
+            com_lis.append([a,b])
+
     print(lol_list, "***************************")
     # print(los_list,"--------------------------------------")
     # print(com_lis,"***************************")
-    return "ok"
+    return lol_list
+
+@app.route('/mlnew',methods=['get'])
+def mlnew():
+    c=Db()
+
+    qry="SELECT pr_date,pr_amt,pr_time from prevprice where pbid='2'"
+    res=c.select(qry)
+    ldate=[]
+    lprice=[]
+    for i in res:
+        ldate.append(i['pr_date'])
+        lprice.append(i['pr_amt'])
+    print(lprice,"*******")
+    print("   ")
+
+    opn_list=[]
+    close_lst=[]
+    # open,high,low,close
+    all_list=[]
+    high_lst=[]
+    low_lst=[]
+    for i in range(len(lprice)):
+        if i<10:
+            if i==0:
+                a=float(lprice[i])
+                b=float(lprice[i])
+                opn_list.append(a)
+
+                all_list.append([a,a,a,a])
+                close_lst.append(a)
+                # high_lst.append(a)
+                # low_lst.append(a)
+            else:
+                a = float(lprice[i - 1])
+                b = float(lprice[i])
+                close_lst.append(b)
+                opn_list.append(a)
+                loss = b - a
+                # if a > b:
+                #     high = a
+                # else:
+                #     high = b
+                high=max(opn_list)
+                high_lst.append(high)
+                lw=min(opn_list)
+                low_lst.append(lw)
+                all_list.append([a, high, lw, b])
+
+
+
+        else:
+            opn_list.append(a)
+            start_point=i-10
+            print("----------start",start_point)
+            this_list=[]
+            for ij in range(start_point,i):
+                this_list.append(opn_list[ij])
+            print(this_list)
+
+            a = float(lprice[i-1])
+            b = float(lprice[i])
+            loss = b - a
+            high=max(this_list)
+
+            # if a>b:
+            #     high=a
+            # else:
+            #     high=b
+            low = min(this_list)
+            high_lst.append(high)
+
+            low_lst.append(low)
+            all_list.append([a,high,low,b])
+
+
+
+    print(all_list, "***************************")
+    print(opn_list,"--------------------------------------")
+    print(high_lst,"***************************")
+    return all_list
 
 
 @app.route('/prediction',methods=['post'])

@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+{% block body %}
+
+                    <h4 class="card-title"><u>COMPLAINTS</u></h4>
+{#                    </div>#}
+
+
+<form action="/hh" method="post">
+<table class="pull-right">
+  <tr>
+    <td>FROM</td>
+    <td>
+      <input type="date" name="ff" class="form-control" id="textfield" /></td>
+    <td>TO</td>
+    <td>
+      <input type="date" name="tt" id="textfield2" class="form-control"/></td>
+    <td><input name="submit" type="submit" class="btn btn-inverse-primary btn-fw" value="GO" /></td>
+    <td>STATUS</td>
+    <td>
+      <select name="select3" id="select3" class="btn btn-secondary dropdown-toggle">
+
+          <option class="dropdown-header"  value="ALL">ALL</option>
+          <option class="dropdown-header" value="PENDING">Pending</option>
+          <option class="dropdown-header" value="DONE">DONE</option>
+      </select></td>
+     <td><input name="submit" type="submit"  class="btn btn-inverse-primary btn-fw" value="SUBMIT" /></td>
+  </tr>
+
+  </table>
+
+
+
+
+                    <table class="table table-hover">
+                      <thead>
+                        <tr>
+                             <th>#</th>
+                             <th>DATE</th>
+                             <th>USER</th>
+                             <th>COMPLAINT</th>
+                             <th>STATUS</th>
+                             <th>REPLY</th>
+                      </thead>
+                      <tbody>
+                         {% for i in data %}
+                            <tr>
+                                <td height="89">{{ loop.index }}</td>
+                                <td>{{ i['cdate'] }}</td>
+                                <td>{{ i['fname'] }} {{ i['lname'] }}&nbsp;</td>
+                                <td>{{ i['u_complaint'] }}&nbsp;</td>
+                                <td>{{ i['status'] }}&nbsp;</td>
+                                <td>
+                                    {% if i['status']== 'PENDING' %}
+                                        <a href="/send_replies/{{ i['cid'] }}"><H5>REPLY</H5></a>
+
+                                    {% else %}
+
+                                {{ i['reply'] }}
+                                    {% endif %}
+
+                                </td>
+                                </tr>
+                        {% endfor %}
+
+                      </tbody>
+                    </table>
+</form>
+
+
+
+
+
+{% endblock %}
