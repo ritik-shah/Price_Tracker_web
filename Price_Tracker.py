@@ -1,5 +1,5 @@
 import requests
-from flask import Flask, render_template, request, session, jsonify
+from flask import Flask, render_template, request, session, jsonify, current_app
 from DBConnection import Db
 from bs4 import BeautifulSoup
 from flask_cors import CORS
@@ -35,7 +35,7 @@ def home():
     uname=uname.upper()
     print(uname)
 
-    return render_template('/Admin/index.html')
+    return render_template('Admin/index.html', name=uname)
 
 
 
@@ -65,10 +65,23 @@ def changepassword_post():
 def viewregstd_users():
     uname = session['username']
     uname = uname.upper()
-    d=Db()
-    qry="SELECT * FROM users"
-    res=d.select(qry)
-    return render_template('Admin/viewregstd_users.html',data=res, name=uname)
+
+    return render_template('Admin/viewregstd_users.html', name=uname)
+@app.route("/getusers")
+def getusers():
+    d = Db()
+    qry = "SELECT * FROM users"
+    res = d.select(qry)
+    print(res)
+    return jsonify(res)
+@app.route("/changevalues")
+def changevalues():
+    id = request.args.get('id')
+    d = Db()
+    qry = "SELECT * FROM users where fname like '%"+id+"%' or lname like '%"+id+"%' or emailid like '%"+id+"%'"
+    res = d.select(qry)
+    print(res)
+    return jsonify(res)
 @app.route('/viewregstd_post',methods=['post'])
 def viewregstd_post():
     search=request.form['textfield']
@@ -155,11 +168,12 @@ def search():
     uname = session['username']
     uname = uname.upper()
     return render_template('Admin/search.html', name=uname)
+
 @app.route('/search_post',methods=['post'])
 def search_post():
     url=request.form['textfield']
     source=request.form['select']
-
+    return render_template
 
 
 @app.route('/forgot1')
@@ -210,9 +224,6 @@ def and_pr_scrap():
         return jsonify("Enter correct URL")
 
 def and_flipkart(URL):
-
-
-
     r = requests.get(URL)
     soup = BeautifulSoup(r.content,'html.parser')
 
@@ -619,8 +630,9 @@ def androidlogin():
 @app.route('/viewprevprice',methods=['post'])
 def viewprevprice():
     c=Db()
-    lid=request.json['lid']
+    lid=request.json['bid']
     qry="SELECT * FROM prevprice where pbid='"+lid+"'"
+    print(qry)
     res=c.select(qry)
     print(res)
     return jsonify(status="ok",data=res)
@@ -811,18 +823,73 @@ def mlnew():
 @app.route('/prediction',methods=['post'])
 def prediction():
     c=Db()
-    uid=request.json["uid"]
-    qry="SELECT * FROM budget where buid='"+uid+"'"
+    uid=request.json["bid"]
+
+    k = []
+    qry = "SELECT pr_amt from prevprice where pbid='" + uid + "' ORDER BY pr_date DESC"
     res=c.select(qry)
     for i in res:
-        k = []
-        f=i['bid']
-        qry="SELECT pr_amt from prevprice where pbid='"+f+"' ORDER BY pr_date ASC"
-        res=c.select(qry)
-        for i in res :
-            k.append(i['pr_amt'])
+        k.append(float(i['pr_amt']))
+
+    import  numpy as np
+
+    print(k)
+    s=np.mean(k)
+    print(s)
+
+
+    featurs=[]
+    labels=[]
+    pamount=s
+    if len(k)>8:
+        for i in range(len(k)-3):
+            featurs.append([k[i],k[i+1],k[i+2]])
+            labels.append(k[i+3])
+
+        from sklearn.tree import DecisionTreeClassifier
+        a=DecisionTreeClassifier()
+        a.fit(featurs,labels)
+
+        test=[[k[len(k)-3],k[len(k)-2],k[len(k)-1]]]
+
+
+        pamount=a.predict(test)[0]
+        print(pamount, "aaaaaaaaaaaaa")
+
+    print(pamount,"RF Prediction")
+    df=max(s,pamount)
+
+
+    return jsonify(status="ok",newprice=df)
+
+
+    print(k)
     return jsonify(data=res)
 
+
+@app.route("/checkcode/<number>/<code>")
+def check_code(number, code):
+    """
+    check_code(number, code) accepts a number and the code entered by the user and
+    tells if the code entered for that number is correct or not.
+    """
+
+    original_code = current_app.redis.get("number:%s:code" % number)
+    if original_code == code:  # verification successful, delete the code
+        current_app.redis.delete("number:%s:code" % number)
+        return (jsonify({"status": "success", "message": "codes match, number verified"}), 200,)
+    elif original_code != code:
+        return (
+            jsonify(
+                {
+                    "status": "rejected",
+                    "message": "codes do not match, number not verified",
+                }
+            ),
+            404,
+        )
+    else:
+        return (jsonify({"status": "failed", "message": "number not found"}), 500)
 
 
 if __name__ == '__main__':
